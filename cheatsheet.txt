@@ -1,0 +1,14 @@
+cd test-sqlalchemy
+
+sudo apt install python3
+sudo apt install python3-pip
+sudo apt install python3-venv
+sudo apt install sqlite3
+python3 -m venv envwslubuntu
+source envwslubuntu/bin/activate
+
+# select interpreter Python 3. ... envwslubuntu:venv
+
+# import in project environment
+pip install wheel # to prevent errors such as "Failed building wheel for flask-login"
+pip install sqlalchemy

@@ -77,3 +77,8 @@ s = select([users.c.name, users.c.fullname])
 result = conn.execute(s)
 for row in result:
     print(row)
+
+s = select([users, addresses]).where(users.c.id == addresses.c.user_id)
+for row in conn.execute(s):
+    print(row)
+print(str(users.c.id == addresses.c.user_id)) # "==" operator produces an object thanks to Python __eq__() builtin

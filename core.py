@@ -81,4 +81,15 @@ for row in result:
 s = select([users, addresses]).where(users.c.id == addresses.c.user_id)
 for row in conn.execute(s):
     print(row)
-print(str(users.c.id == addresses.c.user_id)) # "==" operator produces an object thanks to Python __eq__() builtin
+# "==" operator produces an object thanks to Python __eq__() builtin
+print(str(users.c.id == addresses.c.user_id))
+
+print(users.c.id == addresses.c.user_id)
+print(users.c.id == 7)
+print((users.c.id == 7).compile().params)
+print(users.c.id != 7)
+print(users.c.name == None)
+print("fred" > users.c.name)
+print(users.c.id + addresses.c.id)
+print(users.c.name + users.c.fullname)
+print(users.c.name.op("tiddlywinks")("foo"))

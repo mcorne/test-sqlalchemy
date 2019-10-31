@@ -115,3 +115,34 @@ print(
     )
     & ~(users.c.id > 5)
 )
+
+s = select(
+    [(users.c.fullname + ", " + addresses.c.email_address).label("title")]
+).where(
+    and_(
+        users.c.id == addresses.c.user_id,
+        users.c.name.between("m", "z"),
+        or_(
+            addresses.c.email_address.like("%@aol.com"),
+            addresses.c.email_address.like("%@msn.com"),
+        ),
+    )
+)
+print(conn.execute(s).fetchall())
+print(s)
+print(s.compile().params)
+
+s = (
+    select([(users.c.fullname + ", " + addresses.c.email_address).label("title")])
+    .where(users.c.id == addresses.c.user_id)
+    .where(users.c.name.between("m", "z"))
+    .where(
+        or_(
+            addresses.c.email_address.like("%@aol.com"),
+            addresses.c.email_address.like("%@msn.com"),
+        )
+    )
+)
+print(conn.execute(s).fetchall())
+print(s)
+print(s.compile().params)

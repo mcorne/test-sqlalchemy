@@ -5,6 +5,7 @@ from sqlalchemy import (
     MetaData,
     String,
     Table,
+    bindparam,
     create_engine,
 )
 from sqlalchemy.sql import and_, not_, or_, select, text
@@ -155,4 +156,13 @@ s = text(
     "AND (addresses.email_address LIKE :e1 "
     "OR addresses.email_address LIKE :e2)"
 )
-print(conn.execute(s, x='m', y='z', e1='%@aol.com', e2='%@msn.com').fetchall())
+print(conn.execute(s, x="m", y="z", e1="%@aol.com", e2="%@msn.com").fetchall())
+
+stmt = text("SELECT * FROM users WHERE users.name BETWEEN :x AND :y")
+stmt = stmt.bindparams(x="m", y="z")
+print(stmt)
+
+stmt = text("SELECT * FROM users WHERE users.name BETWEEN :x AND :y")
+stmt = stmt.bindparams(bindparam("x", type_=String), bindparam("y", type_=String))
+result = conn.execute(stmt, {"x": "m", "y": "z"})
+print(result)

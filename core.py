@@ -7,7 +7,7 @@ from sqlalchemy import (
     Table,
     create_engine,
 )
-from sqlalchemy.sql import select
+from sqlalchemy.sql import and_, not_, or_, select
 
 engine = create_engine("sqlite:///database.sqlite3", echo=True)
 metadata = MetaData()
@@ -93,3 +93,25 @@ print("fred" > users.c.name)
 print(users.c.id + addresses.c.id)
 print(users.c.name + users.c.fullname)
 print(users.c.name.op("tiddlywinks")("foo"))
+
+print(
+    and_(
+        users.c.name.like("j%"),
+        users.c.id == addresses.c.user_id,
+        or_(
+            addresses.c.email_address == "wendy@aol.com",
+            addresses.c.email_address == "jack@yahoo.com",
+        ),
+        not_(users.c.id > 5),
+    )
+)
+
+print(
+    users.c.name.like("j%")
+    & (users.c.id == addresses.c.user_id)
+    & (
+        (addresses.c.email_address == "wendy@aol.com")
+        | (addresses.c.email_address == "jack@yahoo.com")
+    )
+    & ~(users.c.id > 5)
+)

@@ -166,3 +166,26 @@ stmt = text("SELECT * FROM users WHERE users.name BETWEEN :x AND :y")
 stmt = stmt.bindparams(bindparam("x", type_=String), bindparam("y", type_=String))
 result = conn.execute(stmt, {"x": "m", "y": "z"})
 print(result)
+
+stmt = text("SELECT id, name FROM users")
+stmt = stmt.columns(users.c.id, users.c.name)
+j = stmt.join(addresses, stmt.c.id == addresses.c.user_id)
+new_stmt = select([stmt.c.id, addresses.c.id]).select_from(j).where(stmt.c.name == "x")
+print(new_stmt)
+
+stmt = text(
+    "SELECT users.id, addresses.id, users.id, "
+    "users.name, addresses.email_address AS email "
+    "FROM users JOIN addresses ON users.id=addresses.user_id "
+    "WHERE users.id = 1"
+).columns(
+    users.c.id,
+    addresses.c.id,
+    addresses.c.user_id,
+    users.c.name,
+    addresses.c.email_address,
+)
+result = conn.execute(stmt)
+print(stmt)
+row = result.fetchone()
+print(row[addresses.c.email_address])

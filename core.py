@@ -7,7 +7,7 @@ from sqlalchemy import (
     Table,
     create_engine,
 )
-from sqlalchemy.sql import and_, not_, or_, select
+from sqlalchemy.sql import and_, not_, or_, select, text
 
 engine = create_engine("sqlite:///database.sqlite3", echo=True)
 metadata = MetaData()
@@ -146,3 +146,13 @@ s = (
 print(conn.execute(s).fetchall())
 print(s)
 print(s.compile().params)
+
+s = text(
+    "SELECT users.fullname || ', ' || addresses.email_address AS title "
+    "FROM users, addresses "
+    "WHERE users.id = addresses.user_id "
+    "AND users.name BETWEEN :x AND :y "
+    "AND (addresses.email_address LIKE :e1 "
+    "OR addresses.email_address LIKE :e2)"
+)
+print(conn.execute(s, x='m', y='z', e1='%@aol.com', e2='%@msn.com').fetchall())

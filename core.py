@@ -36,15 +36,24 @@ metadata.create_all(engine, checkfirst=True)
 
 conn = engine.connect()
 
+print("--------------------")
+print("Insert Jack")
+print("--------------------")
 ins = users.insert().values(name="jack", fullname="Jack Jones")
 print(str(ins))
 print(ins.compile().params)
 result = conn.execute(ins)
 print(result.inserted_primary_key)
 
+print("--------------------")
+print("Insert Wendy")
+print("--------------------")
 ins = users.insert()
 conn.execute(ins, id=2, name="wendy", fullname="Wendy Williams")
 
+print("--------------------")
+print("Insert addresses")
+print("--------------------")
 conn.execute(
     addresses.insert(),
     [
@@ -55,36 +64,57 @@ conn.execute(
     ],
 )
 
+print("--------------------")
+print("Select users")
+print("--------------------")
 s = select([users])
 result = conn.execute(s)
 print(result)
 for row in result:
     print(row)
 
+print("--------------------")
+print("Fetch one user (named columns)")
+print("--------------------")
 result = conn.execute(s)
 row = result.fetchone()
 print("name:", row["name"], "; fullname:", row["fullname"])
 
+print("--------------------")
+print("Fetch one user (indexed columns)")
+print("--------------------")
 row = result.fetchone()
 print("name:", row[1], "; fullname:", row[2])
 
+print("--------------------")
+print("Fetch users (column object)")
+print("--------------------")
 for row in conn.execute(s):
     print("name:", row[users.c.name], "; fullname:", row[users.c.fullname])
 
 # result sets with pending rows remaining should be explicitly closed for some database API
 result.close()
 
+print("--------------------")
+print("Fetch one user (table column)")
+print("--------------------")
 s = select([users.c.name, users.c.fullname])
 result = conn.execute(s)
 for row in result:
     print(row)
 
+print("--------------------")
+print("Select (from/where)")
+print("--------------------")
 s = select([users, addresses]).where(users.c.id == addresses.c.user_id)
 for row in conn.execute(s):
     print(row)
 # "==" operator produces an object thanks to Python __eq__() builtin
 print(str(users.c.id == addresses.c.user_id))
 
+print("--------------------")
+print("Operators")
+print("--------------------")
 print(users.c.id == addresses.c.user_id)
 print(users.c.id == 7)
 print((users.c.id == 7).compile().params)
@@ -95,6 +125,9 @@ print(users.c.id + addresses.c.id)
 print(users.c.name + users.c.fullname)
 print(users.c.name.op("tiddlywinks")("foo"))
 
+print("--------------------")
+print("Conjunctions (and, or, not)")
+print("--------------------")
 print(
     and_(
         users.c.name.like("j%"),
@@ -107,6 +140,9 @@ print(
     )
 )
 
+print("--------------------")
+print("Conjunctions (& | ~)")
+print("--------------------")
 print(
     users.c.name.like("j%")
     & (users.c.id == addresses.c.user_id)
@@ -117,6 +153,9 @@ print(
     & ~(users.c.id > 5)
 )
 
+print("--------------------")
+print("Select (where, and, or)")
+print("--------------------")
 s = select(
     [(users.c.fullname + ", " + addresses.c.email_address).label("title")]
 ).where(
@@ -133,6 +172,9 @@ print(conn.execute(s).fetchall())
 print(s)
 print(s.compile().params)
 
+print("--------------------")
+print("Select (multiple where)")
+print("--------------------")
 s = (
     select([(users.c.fullname + ", " + addresses.c.email_address).label("title")])
     .where(users.c.id == addresses.c.user_id)
@@ -148,6 +190,9 @@ print(conn.execute(s).fetchall())
 print(s)
 print(s.compile().params)
 
+print("--------------------")
+print("Textual SQL")
+print("--------------------")
 s = text(
     "SELECT users.fullname || ', ' || addresses.email_address AS title "
     "FROM users, addresses "
@@ -158,21 +203,33 @@ s = text(
 )
 print(conn.execute(s, x="m", y="z", e1="%@aol.com", e2="%@msn.com").fetchall())
 
+print("--------------------")
+print("Parameter binding")
+print("--------------------")
 stmt = text("SELECT * FROM users WHERE users.name BETWEEN :x AND :y")
 stmt = stmt.bindparams(x="m", y="z")
 print(stmt)
 
+print("--------------------")
+print("Parameter binding with type")
+print("--------------------")
 stmt = text("SELECT * FROM users WHERE users.name BETWEEN :x AND :y")
 stmt = stmt.bindparams(bindparam("x", type_=String), bindparam("y", type_=String))
 result = conn.execute(stmt, {"x": "m", "y": "z"})
 print(result)
 
+print("--------------------")
+print("Result columns")
+print("--------------------")
 stmt = text("SELECT id, name FROM users")
 stmt = stmt.columns(users.c.id, users.c.name)
 j = stmt.join(addresses, stmt.c.id == addresses.c.user_id)
 new_stmt = select([stmt.c.id, addresses.c.id]).select_from(j).where(stmt.c.name == "x")
 print(new_stmt)
 
+print("--------------------")
+print("Result columns with textual SQL")
+print("--------------------")
 stmt = text(
     "SELECT users.id, addresses.id, users.id, "
     "users.name, addresses.email_address AS email "

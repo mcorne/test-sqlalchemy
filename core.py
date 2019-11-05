@@ -1,7 +1,8 @@
 from sqlalchemy import (Column, ForeignKey, Integer, MetaData, String, Table,
-                        and_, bindparam, create_engine, desc, func, select,
-                        text)
-from sqlalchemy.sql import and_, literal_column, not_, or_, select, table, text
+                        and_, bindparam, cast, create_engine, desc, func,
+                        select, text)
+from sqlalchemy.sql import (and_, except_, func, literal_column, not_, or_,
+                            select, table, text, union)
 
 engine = create_engine("sqlite:///database.sqlite3", echo=True)
 metadata = MetaData()
@@ -297,3 +298,58 @@ s = select([users]).\
             a2.c.email_address == 'jack@yahoo.com'
         ))
 print(conn.execute(s).fetchall())
+
+print("----------------------------------------")
+print("Join")
+print("----------------------------------------")
+print(users.join(addresses))
+print(users.join(addresses, addresses.c.email_address.like(users.c.name + '%')))
+
+print("----------------------------------------")
+print("Select with join")
+print("----------------------------------------")
+s = select([users.c.fullname]).select_from(users.join(addresses, addresses.c.email_address.like(users.c.name + '%')))
+print(conn.execute(s).fetchall())
+
+print("----------------------------------------")
+print("Outer join")
+print("----------------------------------------")
+s = select([users.c.fullname]).select_from(users.outerjoin(addresses))
+print(s)
+
+print("----------------------------------------")
+print("Parameter binding with type")
+print("----------------------------------------")
+s = select([users, addresses]).where(
+        or_(
+          users.c.name.like(
+                 bindparam('name', type_=String) + text("'%'")),
+          addresses.c.email_address.like(
+                 bindparam('name', type_=String) + text("'@%'"))
+        )
+     ).select_from(users.outerjoin(addresses)
+     ).order_by(addresses.c.id)
+print(conn.execute(s, name='jack').fetchall())
+
+print("----------------------------------------")
+print("Function")
+print("----------------------------------------")
+print(func.now())
+print(func.concat('x', 'y'))
+print(func.current_timestamp())
+print(conn.execute(select([func.max(addresses.c.email_address, type_=String).label('maxemail')])).scalar())
+
+print("----------------------------------------")
+print("Cast")
+print("----------------------------------------")
+s = select([cast(users.c.id, String)])
+print(conn.execute(s).fetchall())
+
+print("----------------------------------------")
+print("Union")
+print("----------------------------------------")
+u = union(
+    addresses.select().where(addresses.c.email_address == 'foo@bar.com'),
+    addresses.select().where(addresses.c.email_address.like('%@yahoo.com')),
+    ).order_by(addresses.c.email_address)
+print(conn.execute(u).fetchall())

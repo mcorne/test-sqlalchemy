@@ -280,16 +280,20 @@ stmt = select([
         addresses.c.user_id,
         func.count(addresses.c.id).label('num_addresses')
     ]).group_by("user_id"
-    ).order_by("user_id", "num_addresses")
-print(conn.execute(stmt).fetchall())
-
-print("----------------------------------------")
-print("Group by label")
-print("----------------------------------------")
-stmt = select([
-        addresses.c.user_id,
-        func.count(addresses.c.id).label('num_addresses')
-    ]).group_by("user_id"
     ).order_by("user_id", desc("num_addresses"))
 
 print(conn.execute(stmt).fetchall())
+
+print("----------------------------------------")
+print("Alias")
+print("----------------------------------------")
+a1 = addresses.alias()
+a2 = addresses.alias()
+s = select([users]).\
+        where(and_(
+            users.c.id == a1.c.user_id,
+            users.c.id == a2.c.user_id,
+            a1.c.email_address == 'jack@msn.com',
+            a2.c.email_address == 'jack@yahoo.com'
+        ))
+print(conn.execute(s).fetchall())

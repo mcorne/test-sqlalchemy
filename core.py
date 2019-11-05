@@ -369,3 +369,28 @@ conn.execute(stmt, [
     {'id':5, '_name':'name2'},
     {'id':6, '_name':'name3'},
 ])
+
+print("----------------------------------------")
+print("Update where")
+print("----------------------------------------")
+stmt = users.update().where(users.c.name == 'jack').values(name='ed')
+print(conn.execute(stmt))
+
+print("----------------------------------------")
+print("Updates")
+print("----------------------------------------")
+stmt = users.update().where(users.c.name == bindparam('oldname')).values(name=bindparam('newname'))
+print(conn.execute(stmt, [
+    {'oldname':'jack', 'newname':'ed'},
+    {'oldname':'wendy', 'newname':'mary'},
+    {'oldname':'jim', 'newname':'jake'},
+]))
+
+print("----------------------------------------")
+print("Deletes")
+print("----------------------------------------")
+stmt = users.delete().where(users.c.name.like("name%"))
+result = conn.execute(stmt)
+print(result)
+print(result.rowcount)
+

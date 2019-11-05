@@ -27,11 +27,11 @@ Base.metadata.drop_all(engine, checkfirst=True)
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
+session = Session()
 
 print("----------------------------------------")
 print("Add user")
 print("----------------------------------------")
-session = Session()
 ed_user = User(name="ed", fullname="Ed Jones", nickname="edsnickname")
 session.add(ed_user)
 session.commit()
@@ -40,3 +40,29 @@ print("----------------------------------------")
 print("Get user ID")
 print("----------------------------------------")
 print(ed_user.id)
+
+print("----------------------------------------")
+print("Add users")
+print("----------------------------------------")
+session.add_all(
+    [
+        User(name="wendy", fullname="Wendy Williams", nickname="windy"),
+        User(name="mary", fullname="Mary Contrary", nickname="mary"),
+        User(name="fred", fullname="Fred Flintstone", nickname="freddy"),
+    ]
+)
+
+print("----------------------------------------")
+print("Rollback")
+print("----------------------------------------")
+ed_user.name = "Edwardo"
+fake_user = User(name="fakeuser", fullname="Invalid", nickname="12345")
+session.add(fake_user)
+session.rollback()
+print(ed_user.name)
+
+print("----------------------------------------")
+print("Query user")
+print("----------------------------------------")
+print(session.query(User).filter(User.name.in_(["ed", "fakeuser"])).all())
+

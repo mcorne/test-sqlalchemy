@@ -353,3 +353,19 @@ u = union(
     addresses.select().where(addresses.c.email_address.like('%@yahoo.com')),
     ).order_by(addresses.c.email_address)
 print(conn.execute(u).fetchall())
+
+print("----------------------------------------")
+print("Update")
+print("----------------------------------------")
+stmt = users.update().values(fullname="Fullname: " + users.c.name)
+print(conn.execute(stmt))
+
+print("----------------------------------------")
+print("Inserts")
+print("----------------------------------------")
+stmt = users.insert().values(name=bindparam('_name') + " .. name")
+conn.execute(stmt, [
+    {'id':4, '_name':'name1'},
+    {'id':5, '_name':'name2'},
+    {'id':6, '_name':'name3'},
+])

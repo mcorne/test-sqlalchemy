@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "envwslubuntu/bin/python"
+    "python.pythonPath": "envwslubuntu/bin/python",
+    "python.formatting.provider": "black"
 }

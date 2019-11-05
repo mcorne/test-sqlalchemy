@@ -4,7 +4,6 @@ from sqlalchemy import (Column, ForeignKey, Integer, MetaData, String, Table,
 from sqlalchemy.sql import (and_, except_, func, literal_column, not_, or_,
                             select, table, text, union)
 
-engine = create_engine("sqlite:///database.sqlite3", echo=True)
 metadata = MetaData()
 
 users = Table(
@@ -23,6 +22,7 @@ addresses = Table(
     Column("email_address", String, nullable=False),
 )
 
+engine = create_engine("sqlite:///core.sqlite3", echo=True)
 # users.drop(engine, checkfirst=True)
 # users.create(engine, checkfirst=True)
 metadata.drop_all(engine, checkfirst=True)
@@ -393,4 +393,3 @@ stmt = users.delete().where(users.c.name.like("name%"))
 result = conn.execute(stmt)
 print(result)
 print(result.rowcount)
-

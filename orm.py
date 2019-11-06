@@ -1,4 +1,4 @@
-from sqlalchemy import (Column, ForeignKey, Integer, String, and_,
+from sqlalchemy import (Column, ForeignKey, Integer, String, Table, Text, and_,
                         create_engine, func, or_, text)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased, relationship, sessionmaker
@@ -15,6 +15,7 @@ class User(Base):
     fullname = Column(String)
     nickname = Column(String)
     addresses = relationship("Address", back_populates='user', cascade="all, delete, delete-orphan")
+    posts = relationship("BlogPost", back_populates="author", lazy="dynamic")
 
     def __repr__(self):
         return "<User(name='%s', fullname='%s', nickname='%s')>" % (
@@ -36,7 +37,43 @@ class Address(Base):
     def __repr__(self):
         return "<Address(email_address='%s')>" % self.email_address
 
-# User.addresses = relationship("Address", order_by=Address.id, back_populates="user")
+
+post_keywords = Table('post_keywords', Base.metadata,
+    Column('post_id', ForeignKey('posts.id'), primary_key=True),
+    Column('keyword_id', ForeignKey('keywords.id'), primary_key=True)
+ )
+
+class BlogPost(Base):
+    __tablename__ = 'posts'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    headline = Column(String, nullable=False)
+    body = Column(Text)
+
+    # many to many BlogPost<->Keyword
+    keywords = relationship('Keyword', secondary=post_keywords, back_populates='posts')
+    author = relationship("User", back_populates="posts")
+
+    def __init__(self, headline, body, author):
+        self.author = author
+        self.headline = headline
+        self.body = body
+
+    def __repr__(self):
+        return "BlogPost(%r, %r, %r)" % (self.headline, self.body, self.author)
+
+
+class Keyword(Base):
+    __tablename__ = 'keywords'
+
+    id = Column(Integer, primary_key=True)
+    keyword = Column(String, nullable=False, unique=True)
+    posts = relationship('BlogPost', secondary=post_keywords, back_populates='keywords')
+
+    def __init__(self, keyword):
+        self.keyword = keyword
+
 
 engine = create_engine("sqlite:///orm.sqlite3", echo=True)
 
@@ -333,3 +370,11 @@ session.delete(jack)
 session.commit()
 print(session.query(User).filter_by(name='jack').count())
 print(session.query(Address).filter_by(user_id=5).count())
+
+print("----------------------------------------")
+print("Add post")
+print("----------------------------------------")
+wendy = session.query(User).filter_by(name='wendy').one()
+post = BlogPost("Wendy's Blog Post", "This is a test", wendy)
+session.add(post)
+session.commit()

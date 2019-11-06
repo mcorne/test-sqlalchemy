@@ -1,14 +1,5 @@
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    Integer,
-    String,
-    and_,
-    create_engine,
-    func,
-    or_,
-    text,
-)
+from sqlalchemy import (Column, ForeignKey, Integer, String, and_,
+                        create_engine, func, or_, text)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased, relationship, sessionmaker
 
@@ -272,3 +263,16 @@ print("----------------------------------------")
 print(session.query(User).join('addresses'))
 print("----------------------------------------")
 print(session.query(User).outerjoin(User.addresses))
+
+print("----------------------------------------")
+print("Joins and alias")
+print("----------------------------------------")
+adalias1 = aliased(Address)
+adalias2 = aliased(Address)
+for username, email1, email2 in \
+    session.query(User.name, adalias1.email_address, adalias2.email_address).\
+        join(adalias1, User.addresses).\
+        join(adalias2, User.addresses).\
+        filter(adalias1.email_address=='jack@google.com').\
+        filter(adalias2.email_address=='j25@yahoo.com'):
+    print(username, email1, email2)

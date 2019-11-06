@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String, and_, create_engine, or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased, sessionmaker
 
@@ -118,8 +118,23 @@ print("----------------------------------------")
 print("Operators")
 print("----------------------------------------")
 print(session.query(User).filter(User.name == "ed"))
+print("----------------------------------------")
 print(session.query(User).filter(User.name != "ed"))
+print("----------------------------------------")
 print(session.query(User).filter(User.name.like("%ed%")))
+print("----------------------------------------")
 print(session.query(User).filter(User.name.ilike("%ed%")))
+print("----------------------------------------")
 print(session.query(User).filter(User.name.in_(["ed", "wendy", "jack"])))
+print("----------------------------------------")
 print(session.query(User).filter(~User.name.in_(["ed", "wendy", "jack"])))
+print("----------------------------------------")
+print(session.query(User).filter(User.name == None))
+print("----------------------------------------")
+print(session.query(User).filter(User.name != None))
+print("----------------------------------------")
+print(session.query(User).filter(and_(User.name == 'ed', User.fullname == 'Ed Jones')))
+print("----------------------------------------")
+print(session.query(User).filter(or_(User.name == 'ed', User.name == 'wendy')))
+print("----------------------------------------")
+print(session.query(User).filter(User.name.match('wendy')))

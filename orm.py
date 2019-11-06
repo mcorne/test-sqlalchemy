@@ -276,3 +276,10 @@ for username, email1, email2 in \
         filter(adalias1.email_address=='jack@google.com').\
         filter(adalias2.email_address=='j25@yahoo.com'):
     print(username, email1, email2)
+
+print("----------------------------------------")
+print("Subqueries")
+print("----------------------------------------")
+stmt = session.query(Address.user_id, func.count('*').label('address_count')).group_by(Address.user_id).subquery()
+for u, count in session.query(User, stmt.c.address_count).outerjoin(stmt, User.id==stmt.c.user_id).order_by(User.id):
+    print(u, count)

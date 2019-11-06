@@ -300,3 +300,9 @@ print("----------------------------------------")
 stmt = exists().where(Address.user_id==User.id)
 for name, in session.query(User.name).filter(stmt):
     print(name)
+print("----------------------------------------")
+for name, in session.query(User.name).filter(User.addresses.any()):
+    print(name)
+print("----------------------------------------")
+for name, in session.query(User.name).filter(User.addresses.any(Address.email_address.like('%google%'))):
+    print(name)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, and_, create_engine, or_
+from sqlalchemy import Column, Integer, String, and_, create_engine, or_, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased, sessionmaker
 
@@ -39,7 +39,7 @@ session.commit()
 print("----------------------------------------")
 print("ID")
 print("----------------------------------------")
-print(ed_user.id)
+print("id = " + str(ed_user.id))
 
 print("----------------------------------------")
 print("Add many")
@@ -60,7 +60,7 @@ ed_user.name = "Edwardo"
 fake_user = User(name="fakeuser", fullname="Invalid", nickname="12345")
 session.add(fake_user)
 session.rollback()
-print(ed_user.name)
+print("name = " + ed_user.name)
 print(session.query(User).filter(User.name.in_(["ed", "fakeuser"])).all())
 
 print("----------------------------------------")
@@ -133,8 +133,38 @@ print(session.query(User).filter(User.name == None))
 print("----------------------------------------")
 print(session.query(User).filter(User.name != None))
 print("----------------------------------------")
-print(session.query(User).filter(and_(User.name == 'ed', User.fullname == 'Ed Jones')))
+print(session.query(User).filter(and_(User.name == "ed", User.fullname == "Ed Jones")))
 print("----------------------------------------")
-print(session.query(User).filter(or_(User.name == 'ed', User.name == 'wendy')))
+print(session.query(User).filter(or_(User.name == "ed", User.name == "wendy")))
 print("----------------------------------------")
-print(session.query(User).filter(User.name.match('wendy')))
+print(session.query(User).filter(User.name.match("wendy")))
+
+print("----------------------------------------")
+print("Lists and scalars")
+print("----------------------------------------")
+query = session.query(User).filter(User.name.like("%ed")).order_by(User.id)
+print("all = " + str(query.all()))
+print("----------------------------------------")
+print("first = " + str(query.first()))
+print("----------------------------------------")
+print("one = " + str(query.limit(1).one()))
+print("----------------------------------------")
+query = session.query(User.id).filter(User.name == "ed").order_by(User.id)
+print("scalar = " + str(query.scalar()))
+
+print("----------------------------------------")
+print("Textual SQL")
+print("----------------------------------------")
+for user in session.query(User).filter(text("id<224")).order_by(text("id")).all():
+    print(user.name)
+
+print("----------------------------------------")
+print("Parameter binding")
+print("----------------------------------------")
+print(session.query(User).filter(text("id<:value and name=:name")).params(value=224, name='fred').order_by(User.id).one())
+
+print("----------------------------------------")
+print("From statement")
+print("----------------------------------------")
+print(session.query(User).from_statement(text("SELECT * FROM users where name=:name")).params(name='ed').all())
+

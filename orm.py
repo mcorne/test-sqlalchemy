@@ -2,6 +2,7 @@ from sqlalchemy import (Column, ForeignKey, Integer, String, and_,
                         create_engine, func, or_, text)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased, relationship, sessionmaker
+from sqlalchemy.sql import exists
 
 Base = declarative_base()
 
@@ -283,3 +284,19 @@ print("----------------------------------------")
 stmt = session.query(Address.user_id, func.count('*').label('address_count')).group_by(Address.user_id).subquery()
 for u, count in session.query(User, stmt.c.address_count).outerjoin(stmt, User.id==stmt.c.user_id).order_by(User.id):
     print(u, count)
+
+print("----------------------------------------")
+print("Selecting from subqueries")
+print("----------------------------------------")
+stmt = session.query(Address).filter(Address.email_address != 'j25@yahoo.com').subquery()
+adalias = aliased(Address, stmt)
+for user, address in session.query(User, adalias).join(adalias, User.addresses):
+    print(user)
+    print(address)
+
+print("----------------------------------------")
+print("Exists")
+print("----------------------------------------")
+stmt = exists().where(Address.user_id==User.id)
+for name, in session.query(User.name).filter(stmt):
+    print(name)

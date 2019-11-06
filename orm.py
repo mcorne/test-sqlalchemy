@@ -14,6 +14,7 @@ class User(Base):
     name = Column(String)
     fullname = Column(String)
     nickname = Column(String)
+    addresses = relationship("Address", back_populates='user', cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         return "<User(name='%s', fullname='%s', nickname='%s')>" % (
@@ -35,9 +36,7 @@ class Address(Base):
     def __repr__(self):
         return "<Address(email_address='%s')>" % self.email_address
 
-
-User.addresses = relationship("Address", order_by=Address.id, back_populates="user")
-
+# User.addresses = relationship("Address", order_by=Address.id, back_populates="user")
 
 engine = create_engine("sqlite:///orm.sqlite3", echo=True)
 
@@ -325,3 +324,12 @@ print("----------------------------------------")
 print(session.query(Address).filter(Address.user.has(name='ed')).all())
 print("----------------------------------------")
 print(session.query(Address).with_parent(User(id=5), 'addresses').all())
+
+print("----------------------------------------")
+print("Delete")
+print("----------------------------------------")
+jack = session.query(User).filter_by(name='jack').one()
+session.delete(jack)
+session.commit()
+print(session.query(User).filter_by(name='jack').count())
+print(session.query(Address).filter_by(user_id=5).count())

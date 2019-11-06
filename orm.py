@@ -1,13 +1,22 @@
-from sqlalchemy import Column, Integer, String, and_, create_engine, or_, text
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    and_,
+    create_engine,
+    func,
+    or_,
+    text,
+)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import aliased, sessionmaker
+from sqlalchemy.orm import aliased, relationship, sessionmaker
 
 Base = declarative_base()
 
 
 class User(Base):
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True)
     name = Column(String)
     fullname = Column(String)
@@ -161,23 +170,48 @@ for user in session.query(User).filter(text("id<224")).order_by(text("id")).all(
 print("----------------------------------------")
 print("Parameter binding")
 print("----------------------------------------")
-print(session.query(User).filter(text("id<:value and name=:name")).params(value=224, name='fred').order_by(User.id).one())
+print(
+    session.query(User)
+    .filter(text("id<:value and name=:name"))
+    .params(value=224, name="fred")
+    .order_by(User.id)
+    .one()
+)
 
 print("----------------------------------------")
 print("From statement")
 print("----------------------------------------")
-print(session.query(User).from_statement(text("SELECT * FROM users where name=:name")).params(name='ed').all())
+print(
+    session.query(User)
+    .from_statement(text("SELECT * FROM users where name=:name"))
+    .params(name="ed")
+    .all()
+)
 
 print("----------------------------------------")
 print("Statement columns")
 print("----------------------------------------")
 stmt = text("SELECT name, id, fullname, nickname FROM users where name=:name")
 stmt = stmt.columns(User.name, User.id, User.fullname, User.nickname)
-print(session.query(User).from_statement(stmt).params(name='ed').all())
+print(session.query(User).from_statement(stmt).params(name="ed").all())
 
 print("----------------------------------------")
 print("Returned columns")
 print("----------------------------------------")
 stmt = text("SELECT name, id FROM users where name=:name")
 stmt = stmt.columns(User.name, User.id)
-session.query(User.id, User.name).from_statement(stmt).params(name='ed').all()
+print(session.query(User.id, User.name).from_statement(stmt).params(name="ed").all())
+
+print("----------------------------------------")
+print("Counting")
+print("----------------------------------------")
+print(session.query(User).filter(User.name.like("%ed")).count())
+print("----------------------------------------")
+print(session.query(func.count("*")).select_from(User).scalar())
+print("----------------------------------------")
+print(session.query(func.count(User.id)).scalar())
+
+print("----------------------------------------")
+print("Counting group")
+print("----------------------------------------")
+print(session.query(func.count(User.name), User.name).group_by(User.name).all())
